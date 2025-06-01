@@ -96,20 +96,31 @@ body {
 .timer-edge.active {
     font-weight: bold;
     color: #5271FF;
-    /* Optionally: border: 2px solid #5271FF; */
 }
 #timerP1 { left: max(4vw, 20px); }
 #timerP2 { right: max(4vw, 20px); }
 
-@media (max-width: 700px), (max-height: 700px) {
+.result-display {
+    font-size: 26px;
+    color: #0D0D55;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+}
+.hidden {
+    display: none;
+}
+
+/* Mobile-specific layout for menu and game-over */
+@media (max-width: 600px), (max-height: 700px) {
     .ui-container {
-        padding: 10vw 2vw;
+        padding: 7vw 2vw;
         min-width: 90vw;
         max-width: 96vw;
         gap: 12px;
     }
     .title {
-        font-size: 8vw;
+        font-size: 7vw;
     }
     .subtitle,
     .input-label {
@@ -132,6 +143,7 @@ body {
         font-size: 6vw;
         padding: 3vw 0;
         border-radius: 8px;
+        text-align: center;
     }
     #timerP1 {
         top: 3vw;
@@ -141,14 +153,4 @@ body {
         bottom: 3vw;
         transform: translate(-50%,0);
     }
-}
-.result-display {
-    font-size: 26px;
-    color: #0D0D55;
-    font-weight: bold;
-    text-align: center;
-    margin: 10px 0;
-}
-.hidden {
-    display: none;
 }
