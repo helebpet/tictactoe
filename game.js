@@ -1,11 +1,8 @@
-// Tic Tac Toe Game Logic and UI, with checkerboard border on non-game screens only
-// Checkerboard border changes to blue theme when any button is hovered/focused
-
+// Responsive & visually pleasing Tic Tac Toe
 const CHECKERBOARD_THEMES = {
     normal: ['#D9F201', '#FA87A0'],
     blue:   ['#0D0D55', '#5271FF']
 };
-
 let checkerboardTheme = 'normal';
 
 const COLORS = {
@@ -16,7 +13,8 @@ const COLORS = {
     hover: '#5271FF',
     winLine: '#0D0D55'
 };
-const BOARD_SCALE = 0.6;
+const BOARD_SCALE_DESKTOP = 0.6;   // Board maxes out at 60% of the smallest viewport
+const BOARD_SCALE_MOBILE  = 0.96;  // On mobile, fill more screen
 const TURN_TIME_LIMIT = 10;
 const ROBOT_NAMES = [
     "ThinkBot", "SmartBot", "LogicBot", "WinBot", "TacBot",
@@ -39,7 +37,6 @@ const Game = {
     boardY: 0,
 };
 
-// UI Selectors
 const $menuScreen = document.getElementById('menuScreen');
 const $nameScreen = document.getElementById('nameScreen');
 const $gameOverScreen = document.getElementById('gameOverScreen');
@@ -55,7 +52,7 @@ const $btnStartGame = document.getElementById('btnStartGame');
 const $btnPlayAgain = document.getElementById('btnPlayAgain');
 const $btnBackToMenu = document.getElementById('btnBackToMenu');
 
-// --- Checkerboard hover state logic ---
+// Checkerboard hover state logic
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = [
         ...document.querySelectorAll('.game-button')
@@ -65,16 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('focus', handleBorderBlue);
         btn.addEventListener('mouseleave', handleBorderNormal);
         btn.addEventListener('blur', handleBorderNormal);
+        // For mobile/touch
+        btn.addEventListener('touchstart', handleBorderBlue, {passive:true});
+        btn.addEventListener('touchend', handleBorderNormal, {passive:true});
+        btn.addEventListener('touchcancel', handleBorderNormal, {passive:true});
     });
 });
-function handleBorderBlue() {
-    checkerboardTheme = 'blue';
-}
-function handleBorderNormal() {
-    checkerboardTheme = 'normal';
-}
+function handleBorderBlue() { checkerboardTheme = 'blue'; }
+function handleBorderNormal() { checkerboardTheme = 'normal'; }
 
-// Utility Functions
 function hideAllScreens() {
     $menuScreen.classList.add('hidden');
     $nameScreen.classList.add('hidden');
@@ -137,15 +133,11 @@ function endGame(message) {
     $resultText.textContent = text;
     $gameOverScreen.classList.remove('hidden');
 }
-
-// Event Listeners
 $btnHuman.addEventListener('click', () => showNameEntry('human'));
 $btnRobot.addEventListener('click', () => showNameEntry('robot'));
 $btnStartGame.addEventListener('click', startGame);
 $btnPlayAgain.addEventListener('click', resetGame);
 $btnBackToMenu.addEventListener('click', showMenu);
-
-// Accessibility: Enter key to submit in name screen
 $nameScreen.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') startGame();
 });
@@ -158,7 +150,6 @@ function setup() {
     showMenu();
 }
 function draw() {
-    // Checkerboard border ONLY if not actively playing the game
     if (
         !$menuScreen.classList.contains('hidden') ||
         !$nameScreen.classList.contains('hidden') ||
@@ -177,11 +168,23 @@ function draw() {
         checkTimeLimit();
     }
 }
-
+// --- Board layout logic ---
+function calculateBoardMetrics() {
+    // Responsive: on mobile, use almost all the screen; on desktop, limit to 60% for whitespace
+    let isMobile = window.innerWidth < 700 || window.innerHeight < 700;
+    let boardScale = isMobile ? BOARD_SCALE_MOBILE : BOARD_SCALE_DESKTOP;
+    Game.boardSize = Math.min(windowWidth, windowHeight) * boardScale;
+    // Clamp minimum/maximum for sanity
+    Game.boardSize = Math.max(Game.boardSize, 240);
+    Game.boardSize = Math.min(Game.boardSize, 600);
+    Game.cellSize = Game.boardSize / 3;
+    Game.boardX = (windowWidth - Game.boardSize) / 2;
+    Game.boardY = (windowHeight - Game.boardSize) / 2 + (isMobile ? 12 : 0);
+}
 function drawCheckerboardBorder() {
     background(255);
     let [color1, color2] = CHECKERBOARD_THEMES[checkerboardTheme];
-    let minTiles = 16, maxTiles = 24;
+    let minTiles = 10, maxTiles = 24;
     let nTilesX = Math.max(minTiles, Math.min(maxTiles, Math.floor(windowWidth / 40)));
     let nTilesY = Math.max(minTiles, Math.min(maxTiles, Math.floor(windowHeight / 40)));
     let tileSizeX = windowWidth / nTilesX;
@@ -200,12 +203,6 @@ function drawCheckerboardBorder() {
         }
     }
 }
-function calculateBoardMetrics() {
-    Game.boardSize = min(windowWidth * 0.6, windowHeight * 0.6);
-    Game.cellSize = Game.boardSize / 3;
-    Game.boardX = (windowWidth - Game.boardSize) / 2;
-    Game.boardY = (windowHeight - Game.boardSize) / 2;
-}
 function drawBoard() {
     noStroke();
     for (let i = 0; i < 3; i++) {
@@ -213,17 +210,19 @@ function drawBoard() {
             let x = Game.boardX + j * Game.cellSize;
             let y = Game.boardY + i * Game.cellSize;
             fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
-            rect(x, y, Game.cellSize, Game.cellSize);
-            // Hover effect
-            if (isValidMove(i, j) && isMouseOverCell(i, j)) {
+            rect(x, y, Game.cellSize, Game.cellSize, 12); // Slight rounding
+            // Hover/tap effect
+            if (isValidMove(i, j) && (isMouseOverCell(i, j) || isTouchOverCell(i, j))) {
                 fill(COLORS.hover + '44');
-                rect(x, y, Game.cellSize, Game.cellSize);
+                rect(x, y, Game.cellSize, Game.cellSize, 12);
             }
         }
     }
 }
 function drawMarks() {
-    textSize(Game.cellSize * 0.6);
+    // Padding inside cell: never let text touch the edge
+    let fontSize = Game.cellSize * 0.55;
+    textSize(fontSize);
     textAlign(CENTER, CENTER);
     fill(COLORS.text);
     noStroke();
@@ -232,7 +231,7 @@ function drawMarks() {
             if (Game.board[i][j] !== '') {
                 let cx = Game.boardX + j * Game.cellSize + Game.cellSize / 2;
                 let cy = Game.boardY + i * Game.cellSize + Game.cellSize / 2;
-                text(Game.board[i][j], cx, cy);
+                text(Game.board[i][j], cx, cy + 2);
             }
         }
     }
@@ -247,18 +246,40 @@ function drawWinLine() {
     strokeWeight(8);
     line(x1, y1, x2, y2);
 }
-
-// --- Mouse and Keyboard ---
+// --- Mouse, Touch & Keyboard ---
 function mousePressed() {
     if (!Game.active || Game.winner !== null) return;
     if (Game.mode === 'robot' && Game.currentPlayer === 'O') return;
-    let i = floor((mouseY - Game.boardY) / Game.cellSize);
-    let j = floor((mouseX - Game.boardX) / Game.cellSize);
+    handleTap(mouseX, mouseY);
+}
+function touchStarted() {
+    if (!Game.active || Game.winner !== null) return;
+    if (Game.mode === 'robot' && Game.currentPlayer === 'O') return;
+    let x = touches.length > 0 ? touches[0].x : mouseX;
+    let y = touches.length > 0 ? touches[0].y : mouseY;
+    handleTap(x, y);
+}
+function handleTap(x, y) {
+    let i = Math.floor((y - Game.boardY) / Game.cellSize);
+    let j = Math.floor((x - Game.boardX) / Game.cellSize);
     if (i >= 0 && i < 3 && j >= 0 && j < 3 && isValidMove(i, j)) {
         makeMove(i, j);
     }
 }
-// Accessibility: keyboard navigation (arrow keys and enter)
+function isTouchOverCell(i, j) {
+    if (!touches || touches.length === 0) return false;
+    let t = touches[0];
+    let x = Game.boardX + j * Game.cellSize;
+    let y = Game.boardY + i * Game.cellSize;
+    return t.x > x && t.x < x + Game.cellSize &&
+           t.y > y && t.y < y + Game.cellSize;
+}
+function isMouseOverCell(i, j) {
+    let x = Game.boardX + j * Game.cellSize;
+    let y = Game.boardY + i * Game.cellSize;
+    return mouseX > x && mouseX < x + Game.cellSize &&
+           mouseY > y && mouseY < y + Game.cellSize;
+}
 let cursor = { i: 0, j: 0 };
 function keyPressed() {
     if (!Game.active || Game.winner !== null) return;
@@ -272,14 +293,6 @@ function keyPressed() {
         }
         return false;
     }
-}
-
-// --- Game Logic ---
-function isMouseOverCell(i, j) {
-    let x = Game.boardX + j * Game.cellSize;
-    let y = Game.boardY + i * Game.cellSize;
-    return mouseX > x && mouseX < x + Game.cellSize &&
-           mouseY > y && mouseY < y + Game.cellSize;
 }
 function isValidMove(i, j) {
     return Game.board[i][j] === '' && Game.winner === null &&
@@ -313,7 +326,6 @@ function makeRobotMove() {
     if (move) makeMove(move.i, move.j);
 }
 function findBestMove() {
-    // Win if possible
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
         if (Game.board[i][j] === '') {
             Game.board[i][j] = 'O';
@@ -322,7 +334,6 @@ function findBestMove() {
             if (tempWinner === 'O') return { i, j };
         }
     }
-    // Block player win
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
         if (Game.board[i][j] === '') {
             Game.board[i][j] = 'X';
@@ -331,21 +342,17 @@ function findBestMove() {
             if (tempWinner === 'X') return { i, j };
         }
     }
-    // Center
     if (Game.board[1][1] === '') return { i: 1, j: 1 };
-    // Corners
     let corners = [{i:0,j:0}, {i:0,j:2}, {i:2,j:0}, {i:2,j:2}];
     for (let corner of corners) {
         if (Game.board[corner.i][corner.j] === '') return corner;
     }
-    // Any spot
     let available = [];
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
         if (Game.board[i][j] === '') available.push({ i, j });
     return available.length > 0 ? randomChoice(available) : null;
 }
 function checkWinner() {
-    // Rows
     for (let i = 0; i < 3; i++) {
         if (Game.board[i][0] !== '' &&
             Game.board[i][0] === Game.board[i][1] &&
@@ -354,7 +361,6 @@ function checkWinner() {
             return Game.board[i][0];
         }
     }
-    // Columns
     for (let j = 0; j < 3; j++) {
         if (Game.board[0][j] !== '' &&
             Game.board[0][j] === Game.board[1][j] &&
@@ -363,7 +369,6 @@ function checkWinner() {
             return Game.board[0][j];
         }
     }
-    // Diagonals
     if (Game.board[0][0] !== '' &&
         Game.board[0][0] === Game.board[1][1] &&
         Game.board[1][1] === Game.board[2][2]) {
@@ -376,7 +381,6 @@ function checkWinner() {
         Game.winLine = {start: {row: 0, col: 2}, end: {row: 2, col: 0}};
         return Game.board[0][2];
     }
-    // Tie
     if (!Game.board.flat().includes('')) {
         Game.winLine = null;
         return 'tie';
@@ -384,8 +388,6 @@ function checkWinner() {
     Game.winLine = null;
     return null;
 }
-
-// --- Timer Logic ---
 function updateTimer() {
     if (!Game.active || Game.winner !== null) return;
     let elapsed = (millis() - Game.startMillis) / 1000;
@@ -398,20 +400,15 @@ function checkTimeLimit() {
     if (!Game.active || Game.winner !== null) return;
     let elapsed = (millis() - Game.startMillis) / 1000;
     if (elapsed > TURN_TIME_LIMIT) {
-        // Timeout: other player wins
         let loser = Game.currentPlayer;
         let winner = Game.currentPlayer === 'X' ? 'O' : 'X';
         Game.winner = winner;
         endGame(`${Game.playerNames[loser]}'s time ran out! ${Game.playerNames[winner]} wins!`);
     }
 }
-
-// --- Responsive Canvas ---
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }
-
-// --- Helper ---
 function millis() { return window.performance.now(); }
 function randomChoice(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
