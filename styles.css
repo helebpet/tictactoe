@@ -11,7 +11,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -77,36 +77,35 @@ body {
 .game-button:focus {
     background-color: #5271FF;
 }
-.timer-display {
-    position: fixed;
-    top: 2vw;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.3em;
+.timer-edge {
+    position: absolute;
     color: #0D0D55;
-    font-weight: bold;
-    background: rgba(255, 255, 255, 0.93);
-    padding: 10px 24px;
-    border-radius: 10px;
-    z-index: 150;
-    /* shadow removed for consistency */
-}
-.result-display {
-    font-size: 26px;
-    color: #0D0D55;
-    font-weight: bold;
+    background: rgba(255,255,255,0.92);
+    font-size: 1.2em;
+    font-family: inherit;
+    font-weight: normal;
+    border-radius: 8px;
+    padding: 12px 18px;
+    min-width: 120px;
     text-align: center;
-    margin: 10px 0;
+    pointer-events: none;
+    z-index: 200;
+    transition: font-weight 0.1s, box-shadow 0.1s;
+    box-shadow: none;
 }
-.hidden {
-    display: none;
+.timer-edge.active {
+    font-weight: bold;
+    color: #5271FF;
+    /* Optionally: border: 2px solid #5271FF; */
 }
-@media (max-width: 600px), (max-height: 700px) {
+#timerP1 { left: max(4vw, 20px); }
+#timerP2 { right: max(4vw, 20px); }
+
+@media (max-width: 700px), (max-height: 700px) {
     .ui-container {
         padding: 10vw 2vw;
         min-width: 90vw;
         max-width: 96vw;
-        border-radius: 12px;
         gap: 12px;
     }
     .title {
@@ -122,12 +121,34 @@ body {
         font-size: 6vw;
         padding: 4vw 0;
     }
-    .timer-display {
-        font-size: 4vw;
-        top: 3vw;
-        padding: 3vw 4vw;
-    }
     .result-display {
         font-size: 6vw;
     }
+    .timer-edge {
+        left: 50% !important;
+        right: auto !important;
+        min-width: 0;
+        width: 80vw;
+        font-size: 6vw;
+        padding: 3vw 0;
+        border-radius: 8px;
+    }
+    #timerP1 {
+        top: 3vw;
+        transform: translate(-50%,0);
+    }
+    #timerP2 {
+        bottom: 3vw;
+        transform: translate(-50%,0);
+    }
+}
+.result-display {
+    font-size: 26px;
+    color: #0D0D55;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+}
+.hidden {
+    display: none;
 }

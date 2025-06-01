@@ -1,4 +1,5 @@
-// Responsive & visually pleasing Tic Tac Toe
+// Responsive & visually pleasing Tic Tac Toe with "timer on edges" and sharp cells
+
 const CHECKERBOARD_THEMES = {
     normal: ['#D9F201', '#FA87A0'],
     blue:   ['#0D0D55', '#5271FF']
@@ -13,8 +14,8 @@ const COLORS = {
     hover: '#5271FF',
     winLine: '#0D0D55'
 };
-const BOARD_SCALE_DESKTOP = 0.6;   // Board maxes out at 60% of the smallest viewport
-const BOARD_SCALE_MOBILE  = 0.96;  // On mobile, fill more screen
+const BOARD_SCALE_DESKTOP = 0.6;
+const BOARD_SCALE_MOBILE  = 0.96;
 const TURN_TIME_LIMIT = 10;
 const ROBOT_NAMES = [
     "ThinkBot", "SmartBot", "LogicBot", "WinBot", "TacBot",
@@ -37,10 +38,10 @@ const Game = {
     boardY: 0,
 };
 
+// UI Selectors
 const $menuScreen = document.getElementById('menuScreen');
 const $nameScreen = document.getElementById('nameScreen');
 const $gameOverScreen = document.getElementById('gameOverScreen');
-const $timerDisplay = document.getElementById('timerDisplay');
 const $player1Input = document.getElementById('player1Input');
 const $player2Input = document.getElementById('player2Input');
 const $player2Group = document.getElementById('player2Group');
@@ -52,6 +53,8 @@ const $btnStartGame = document.getElementById('btnStartGame');
 const $btnPlayAgain = document.getElementById('btnPlayAgain');
 const $btnBackToMenu = document.getElementById('btnBackToMenu');
 
+let timerP1, timerP2;
+
 // Checkerboard hover state logic
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = [
@@ -62,12 +65,38 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('focus', handleBorderBlue);
         btn.addEventListener('mouseleave', handleBorderNormal);
         btn.addEventListener('blur', handleBorderNormal);
-        // For mobile/touch
         btn.addEventListener('touchstart', handleBorderBlue, {passive:true});
         btn.addEventListener('touchend', handleBorderNormal, {passive:true});
         btn.addEventListener('touchcancel', handleBorderNormal, {passive:true});
     });
+    setupEdgeTimers();
 });
+
+function setupEdgeTimers() {
+    // Create timer elements if they don't exist
+    timerP1 = document.getElementById('timerP1');
+    timerP2 = document.getElementById('timerP2');
+    if (!timerP1) {
+        timerP1 = document.createElement('div');
+        timerP1.id = 'timerP1';
+        timerP1.className = 'timer-edge hidden';
+        document.body.appendChild(timerP1);
+    }
+    if (!timerP2) {
+        timerP2 = document.createElement('div');
+        timerP2.id = 'timerP2';
+        timerP2.className = 'timer-edge hidden';
+        document.body.appendChild(timerP2);
+    }
+}
+function showEdgeTimers() {
+    timerP1.classList.remove('hidden');
+    timerP2.classList.remove('hidden');
+}
+function hideEdgeTimers() {
+    timerP1.classList.add('hidden');
+    timerP2.classList.add('hidden');
+}
 function handleBorderBlue() { checkerboardTheme = 'blue'; }
 function handleBorderNormal() { checkerboardTheme = 'normal'; }
 
@@ -75,7 +104,7 @@ function hideAllScreens() {
     $menuScreen.classList.add('hidden');
     $nameScreen.classList.add('hidden');
     $gameOverScreen.classList.add('hidden');
-    $timerDisplay.classList.add('hidden');
+    hideEdgeTimers();
 }
 function showMenu() {
     hideAllScreens();
@@ -102,12 +131,12 @@ function startGame() {
         : randomChoice(ROBOT_NAMES);
     initializeGame();
     hideAllScreens();
-    $timerDisplay.classList.remove('hidden');
+    showEdgeTimers();
 }
 function resetGame() {
     initializeGame();
     hideAllScreens();
-    $timerDisplay.classList.remove('hidden');
+    showEdgeTimers();
 }
 function initializeGame() {
     Game.board = Array.from({ length: 3 }, () => ['', '', '']);
@@ -120,7 +149,7 @@ function initializeGame() {
 }
 function endGame(message) {
     Game.active = false;
-    $timerDisplay.classList.add('hidden');
+    hideEdgeTimers();
     let text = '';
     if (message) {
         text = message;
@@ -164,22 +193,19 @@ function draw() {
         drawBoard();
         drawMarks();
         if (Game.winLine) drawWinLine();
-        updateTimer();
+        updateEdgeTimers();
         checkTimeLimit();
     }
 }
-// --- Board layout logic ---
 function calculateBoardMetrics() {
-    // Responsive: on mobile, use almost all the screen; on desktop, limit to 60% for whitespace
     let isMobile = window.innerWidth < 700 || window.innerHeight < 700;
     let boardScale = isMobile ? BOARD_SCALE_MOBILE : BOARD_SCALE_DESKTOP;
     Game.boardSize = Math.min(windowWidth, windowHeight) * boardScale;
-    // Clamp minimum/maximum for sanity
     Game.boardSize = Math.max(Game.boardSize, 240);
     Game.boardSize = Math.min(Game.boardSize, 600);
     Game.cellSize = Game.boardSize / 3;
     Game.boardX = (windowWidth - Game.boardSize) / 2;
-    Game.boardY = (windowHeight - Game.boardSize) / 2 + (isMobile ? 12 : 0);
+    Game.boardY = (windowHeight - Game.boardSize) / 2;
 }
 function drawCheckerboardBorder() {
     background(255);
@@ -210,17 +236,16 @@ function drawBoard() {
             let x = Game.boardX + j * Game.cellSize;
             let y = Game.boardY + i * Game.cellSize;
             fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
-            rect(x, y, Game.cellSize, Game.cellSize, 12); // Slight rounding
+            rect(x, y, Game.cellSize, Game.cellSize); // sharp, no radius
             // Hover/tap effect
             if (isValidMove(i, j) && (isMouseOverCell(i, j) || isTouchOverCell(i, j))) {
                 fill(COLORS.hover + '44');
-                rect(x, y, Game.cellSize, Game.cellSize, 12);
+                rect(x, y, Game.cellSize, Game.cellSize);
             }
         }
     }
 }
 function drawMarks() {
-    // Padding inside cell: never let text touch the edge
     let fontSize = Game.cellSize * 0.55;
     textSize(fontSize);
     textAlign(CENTER, CENTER);
@@ -246,6 +271,7 @@ function drawWinLine() {
     strokeWeight(8);
     line(x1, y1, x2, y2);
 }
+
 // --- Mouse, Touch & Keyboard ---
 function mousePressed() {
     if (!Game.active || Game.winner !== null) return;
@@ -388,13 +414,39 @@ function checkWinner() {
     Game.winLine = null;
     return null;
 }
-function updateTimer() {
-    if (!Game.active || Game.winner !== null) return;
+function updateEdgeTimers() {
+    if (!Game.active || Game.winner !== null) {
+        hideEdgeTimers();
+        return;
+    }
     let elapsed = (millis() - Game.startMillis) / 1000;
     let remaining = Math.max(0, TURN_TIME_LIMIT - elapsed);
-    let playerName = Game.playerNames[Game.currentPlayer];
-    $timerDisplay.textContent =
-        `${playerName}'s turn: ${remaining.toFixed(1)}s`;
+    let p1name = Game.playerNames.X;
+    let p2name = Game.playerNames.O;
+    let isMobile = window.innerWidth < 700 || window.innerHeight < 700;
+
+    // Timer for X (player 1)
+    timerP1.textContent =
+        `${p1name} (${Game.currentPlayer === 'X' ? '●' : ''}): ${Game.currentPlayer === 'X' ? remaining.toFixed(1) : ''}`;
+    timerP1.className = 'timer-edge' + (Game.currentPlayer === 'X' ? ' active' : '');
+
+    // Timer for O (player 2)
+    timerP2.textContent =
+        `${p2name} (${Game.currentPlayer === 'O' ? '●' : ''}): ${Game.currentPlayer === 'O' ? remaining.toFixed(1) : ''}`;
+    timerP2.className = 'timer-edge' + (Game.currentPlayer === 'O' ? ' active' : '');
+
+    // Position: handled by CSS
+    timerP1.style.top = isMobile ? '3vw' : `${Game.boardY + Game.boardSize/2 - timerP1.offsetHeight/2}px`;
+    timerP1.style.left = isMobile ? '50%' : `max(4vw, 20px)`;
+    timerP1.style.right = '';
+    timerP1.style.transform = isMobile ? 'translate(-50%,0)' : '';
+
+    timerP2.style.bottom = isMobile ? '3vw' : '';
+    timerP2.style.top = isMobile ? '' : `${Game.boardY + Game.boardSize/2 - timerP2.offsetHeight/2}px`;
+    timerP2.style.left = isMobile ? '50%' : '';
+    timerP2.style.right = isMobile ? '' : `max(4vw, 20px)`;
+    timerP2.style.transform = isMobile ? 'translate(-50%,0)' : '';
+    showEdgeTimers();
 }
 function checkTimeLimit() {
     if (!Game.active || Game.winner !== null) return;
