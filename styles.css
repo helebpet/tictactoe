@@ -1,10 +1,16 @@
-body {
+html, body {
+    width: 100vw;
+    height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
     overflow: hidden;
+}
+body {
+    font-family: 'Courier New', monospace;
     background: #fff;
 }
+
 .ui-container {
     position: absolute;
     top: 50%;
@@ -12,27 +18,32 @@ body {
     transform: translate(-50%, -50%);
     background: white;
     border-radius: 0;
-    padding: 40px;
+    padding: 32px 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    min-width: 300px;
-    max-width: 400px;
+    gap: 18px;
+    min-width: 260px;
+    max-width: 95vw;
+    max-height: 95vh;
+    box-sizing: border-box;
     z-index: 100;
+    overflow: auto;
 }
 .title {
-    font-size: 32px;
+    font-size: 2.1em;
     font-weight: bold;
     color: #0D0D55;
     margin: 0;
     text-align: center;
+    word-break: break-word;
 }
 .subtitle {
-    font-size: 16px;
+    font-size: 1em;
     color: #0D0D55;
     margin: 0;
     text-align: center;
+    word-break: break-word;
 }
 .input-group {
     display: flex;
@@ -42,36 +53,43 @@ body {
     width: 100%;
 }
 .input-label {
-    font-size: 14px;
+    font-size: 1em;
     color: #0D0D55;
     font-weight: bold;
 }
 .game-input {
-    padding: 14px 18px;
+    padding: 10px 14px;
     border: 2px solid #0D0D55;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 1em;
     text-align: center;
-    width: 220px;
+    width: 170px;
     background: white;
     color: #0D0D55;
+    box-sizing: border-box;
 }
 .game-input:focus {
     outline: none;
     border-color: #5271FF;
 }
 .game-button {
-    padding: 16px 24px;
+    padding: 14px 0;
     background-color: #0D0D55;
     color: #D9F201;
     border: none;
     border-radius: 25px;
-    font-size: 20px;
+    font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
-    width: 220px;
+    width: 220px;           /* much thinner than 90vw */
+    max-width: 90vw;
+    min-width: 120px;
     transition: background-color 0.2s;
     touch-action: manipulation;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 .game-button:hover,
 .game-button:focus {
@@ -81,12 +99,12 @@ body {
     position: absolute;
     color: #0D0D55;
     background: rgba(255,255,255,0.92);
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-family: inherit;
     font-weight: normal;
     border-radius: 8px;
-    padding: 12px 18px;
-    min-width: 120px;
+    padding: 10px 13px;
+    min-width: 90px;
     text-align: center;
     pointer-events: none;
     z-index: 200;
@@ -97,27 +115,28 @@ body {
     font-weight: bold;
     color: #5271FF;
 }
-#timerP1 { left: max(4vw, 20px); }
-#timerP2 { right: max(4vw, 20px); }
+#timerP1 { left: max(4vw, 10px); }
+#timerP2 { right: max(4vw, 10px); }
 
 .result-display {
-    font-size: 26px;
+    font-size: 1.5em;
     color: #0D0D55;
     font-weight: bold;
     text-align: center;
     margin: 10px 0;
+    word-break: break-word;
 }
 .hidden {
     display: none;
 }
 
-/* Mobile-specific layout for menu and game-over */
-@media (max-width: 600px), (max-height: 700px) {
+/* Responsive: further shrink overlays and buttons on small screens */
+@media (max-width: 500px), (max-height: 650px) {
     .ui-container {
-        padding: 7vw 2vw;
-        min-width: 90vw;
-        max-width: 96vw;
-        gap: 12px;
+        padding: 7vw 1vw;
+        min-width: 85vw;
+        max-width: 97vw;
+        gap: 10px;
     }
     .title {
         font-size: 7vw;
@@ -128,8 +147,9 @@ body {
     }
     .game-input,
     .game-button {
-        width: 92vw;
-        font-size: 6vw;
+        width: 65vw;        /* thinner on mobile too */
+        min-width: 100px;
+        font-size: 5vw;
         padding: 4vw 0;
     }
     .result-display {
@@ -140,7 +160,7 @@ body {
         right: auto !important;
         min-width: 0;
         width: 80vw;
-        font-size: 6vw;
+        font-size: 5vw;
         padding: 3vw 0;
         border-radius: 8px;
         text-align: center;
