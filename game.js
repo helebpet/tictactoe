@@ -1,4 +1,12 @@
 // Tic Tac Toe Game Logic and UI, with checkerboard border on non-game screens only
+// Checkerboard border changes to blue theme when any button is hovered/focused
+
+const CHECKERBOARD_THEMES = {
+    normal: ['#D9F201', '#FA87A0'],
+    blue:   ['#0D0D55', '#5271FF']
+};
+
+let checkerboardTheme = 'normal';
 
 const COLORS = {
     board1: '#D9F201',
@@ -46,6 +54,25 @@ const $btnRobot = document.getElementById('btnRobot');
 const $btnStartGame = document.getElementById('btnStartGame');
 const $btnPlayAgain = document.getElementById('btnPlayAgain');
 const $btnBackToMenu = document.getElementById('btnBackToMenu');
+
+// --- Checkerboard hover state logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const buttons = [
+        ...document.querySelectorAll('.game-button')
+    ];
+    buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', handleBorderBlue);
+        btn.addEventListener('focus', handleBorderBlue);
+        btn.addEventListener('mouseleave', handleBorderNormal);
+        btn.addEventListener('blur', handleBorderNormal);
+    });
+});
+function handleBorderBlue() {
+    checkerboardTheme = 'blue';
+}
+function handleBorderNormal() {
+    checkerboardTheme = 'normal';
+}
 
 // Utility Functions
 function hideAllScreens() {
@@ -132,7 +159,6 @@ function setup() {
 }
 function draw() {
     // Checkerboard border ONLY if not actively playing the game
-    // (i.e. show on menu, name, game over screens)
     if (
         !$menuScreen.classList.contains('hidden') ||
         !$nameScreen.classList.contains('hidden') ||
@@ -152,15 +178,9 @@ function draw() {
     }
 }
 
-// --- Drawing Functions ---
-function calculateBoardMetrics() {
-    Game.boardSize = min(windowWidth * BOARD_SCALE, windowHeight * BOARD_SCALE);
-    Game.cellSize = Game.boardSize / 3;
-    Game.boardX = (windowWidth - Game.boardSize) / 2;
-    Game.boardY = (windowHeight - Game.boardSize) / 2;
-}
 function drawCheckerboardBorder() {
     background(255);
+    let [color1, color2] = CHECKERBOARD_THEMES[checkerboardTheme];
     let minTiles = 16, maxTiles = 24;
     let nTilesX = Math.max(minTiles, Math.min(maxTiles, Math.floor(windowWidth / 40)));
     let nTilesY = Math.max(minTiles, Math.min(maxTiles, Math.floor(windowHeight / 40)));
@@ -174,11 +194,17 @@ function drawCheckerboardBorder() {
                 i < border || i >= nTilesY - border ||
                 j < border || j >= nTilesX - border
             ) {
-                fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
+                fill((i + j) % 2 === 0 ? color1 : color2);
                 rect(j * tileSizeX, i * tileSizeY, tileSizeX, tileSizeY);
             }
         }
     }
+}
+function calculateBoardMetrics() {
+    Game.boardSize = min(windowWidth * 0.6, windowHeight * 0.6);
+    Game.cellSize = Game.boardSize / 3;
+    Game.boardX = (windowWidth - Game.boardSize) / 2;
+    Game.boardY = (windowHeight - Game.boardSize) / 2;
 }
 function drawBoard() {
     noStroke();
