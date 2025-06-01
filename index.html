@@ -7,6 +7,8 @@
     <!-- Google Fonts: Kumbh Sans & JetBrains Mono -->
     <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Use PNG favicon for better browser compatibility -->
+    <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
@@ -20,9 +22,9 @@
 
     <!-- Name Entry Screen -->
     <div id="nameScreen" class="ui-container hidden">
-        <h1 class="title">ENTER NAMES</h1>
+        <h1 class="title" id="nameScreenTitle">ENTER NAMES</h1>
         <div class="input-group">
-            <label class="input-label" for="player1Input">Player 1 (X):</label>
+            <label class="input-label" for="player1Input" id="player1Label">Player 1 (X):</label>
             <input type="text" id="player1Input" class="game-input" maxlength="18" autocomplete="off" spellcheck="false" placeholder="Player 1">
         </div>
         <div id="player2Group" class="input-group">

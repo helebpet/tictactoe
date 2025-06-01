@@ -2,13 +2,13 @@
 // Single player: only "Enter your name" field
 
 const COLORS = {
-    board1: '#D9F201',    // Lime green
-    board2: '#FA87A0',    // Pink
-    text: '#0D0D55',      // Navy blue
-    background: '#FFFFFF', // White
-    hover: '#5271FF',     // Bright blue (with opacity for hover)
-    winLine: '#0D0D55',   // Navy blue
-    highlight: '#5271FF'  // Bright blue for winning cells
+    board1: '#B9B1FF',    // Lavender
+    board2: '#D1DE54',    // Chartreuse
+    text: '#240046',      // Deep purple
+    background: '#F9F5E9', // Off-white
+    hover: '#240046',     // Deep purple (20% opacity for hover)
+    winLine: '#B9B1FF',   // Lavender
+    highlight: '#D1DE54'  // Chartreuse for winning cells
 };
 
 const BOARD_SCALE_DESKTOP = 0.65;
