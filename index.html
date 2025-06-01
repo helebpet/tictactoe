@@ -11,9 +11,8 @@
             padding: 0;
             font-family: 'Courier New', monospace;
             overflow: hidden;
-            background: #fff; /* Ensures white background always */
+            background: #fff;
         }
-        
         .ui-container {
             position: absolute;
             top: 50%;
@@ -22,7 +21,7 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            /* box-shadow removed! */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -31,7 +30,6 @@
             max-width: 400px;
             z-index: 100;
         }
-        
         .title {
             font-size: 32px;
             font-weight: bold;
@@ -39,14 +37,12 @@
             margin: 0;
             text-align: center;
         }
-        
         .subtitle {
             font-size: 16px;
             color: #0D0D55;
             margin: 0;
             text-align: center;
         }
-        
         .input-group {
             display: flex;
             flex-direction: column;
@@ -54,13 +50,11 @@
             gap: 8px;
             width: 100%;
         }
-        
         .input-label {
             font-size: 14px;
             color: #0D0D55;
             font-weight: bold;
         }
-        
         .game-input {
             padding: 12px 16px;
             border: 2px solid #0D0D55;
@@ -71,12 +65,10 @@
             background: white;
             color: #0D0D55;
         }
-        
         .game-input:focus {
             outline: none;
             border-color: #5271FF;
         }
-        
         .game-button {
             padding: 12px 24px;
             background-color: #0D0D55;
@@ -89,11 +81,9 @@
             width: 200px;
             transition: background-color 0.2s;
         }
-        
         .game-button:hover {
             background-color: #5271FF;
         }
-        
         .timer-display {
             position: absolute;
             bottom: 100px;
@@ -106,7 +96,6 @@
             padding: 10px 20px;
             border-radius: 10px;
         }
-        
         .result-display {
             font-size: 24px;
             color: #0D0D55;
@@ -114,7 +103,6 @@
             text-align: center;
             margin: 10px 0;
         }
-        
         .hidden {
             display: none;
         }
@@ -194,12 +182,13 @@
         }
 
         function draw() {
-            if (!gameActive) {
-                background(BG_COLOR);
-                drawFullCheckerboard();
-                return;
+            if (document.getElementById('menuScreen').classList.contains('hidden') === false) {
+                drawResponsiveCheckerboardBorder();
             } else {
-                background(255); // White background during play
+                background(255);
+            }
+
+            if (gameActive) {
                 calculateBoardMetrics();
                 drawBoard();
                 drawMarks();
@@ -209,25 +198,39 @@
             }
         }
 
+        // Draws a 2-square-thick checkerboard border, fully filling the canvas, with no cut squares.
+        function drawResponsiveCheckerboardBorder() {
+            background(255);
+            // Choose a tile count that always fits the window with no cut squares
+            // Prefer 16-24 squares on the shortest side for a nice look
+            let minTiles = 16, maxTiles = 24;
+            let nTilesX = Math.floor(windowWidth / 40);
+            let nTilesY = Math.floor(windowHeight / 40);
+            nTilesX = Math.max(minTiles, Math.min(maxTiles, nTilesX));
+            nTilesY = Math.max(minTiles, Math.min(maxTiles, nTilesY));
+            let tileSizeX = windowWidth / nTilesX;
+            let tileSizeY = windowHeight / nTilesY;
+            let border = 2;
+
+            noStroke();
+            for (let i = 0; i < nTilesY; i++) {
+                for (let j = 0; j < nTilesX; j++) {
+                    if (
+                        i < border || i >= nTilesY - border ||
+                        j < border || j >= nTilesX - border
+                    ) {
+                        fill((i + j) % 2 === 0 ? COLOR1 : COLOR2);
+                        rect(j * tileSizeX, i * tileSizeY, tileSizeX, tileSizeY);
+                    }
+                }
+            }
+        }
+
         function calculateBoardMetrics() {
             boardSize = min(windowWidth * 0.6, windowHeight * 0.6);
             cellSize = boardSize / 3;
             boardX = (windowWidth - boardSize) / 2;
             boardY = (windowHeight - boardSize) / 2;
-        }
-
-        function drawFullCheckerboard() {
-            let tileSize = min(windowWidth, windowHeight) * 0.06;
-            let cols = floor(windowWidth / tileSize);  // Use floor instead of ceil
-            let rows = floor(windowHeight / tileSize); // Use floor instead of ceil
-
-            noStroke();
-            for (let i = 0; i < rows; i++) {
-                for (let j = 0; j < cols; j++) {
-                    fill((i + j) % 2 === 0 ? COLOR1 : COLOR2);
-                    rect(j * tileSize, i * tileSize, tileSize, tileSize);
-                }
-            }
         }
 
         function drawBoard() {
