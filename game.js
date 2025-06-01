@@ -1,9 +1,12 @@
+// Responsive, bold Tic Tac Toe with sharp cells, big modern font, and edge timers
+// Single player: only "Enter your name" field
+
 const COLORS = {
     board1: '#D9F201',    // Lime green
     board2: '#FA87A0',    // Pink
     text: '#0D0D55',      // Navy blue
     background: '#FFFFFF', // White
-    hover: '#5271FF',     // Bright blue
+    hover: '#5271FF',     // Bright blue (with opacity for hover)
     winLine: '#0D0D55',   // Navy blue
     highlight: '#5271FF'  // Bright blue for winning cells
 };
@@ -49,18 +52,10 @@ const $btnStartGame = document.getElementById('btnStartGame');
 const $btnPlayAgain = document.getElementById('btnPlayAgain');
 const $btnBackToMenu = document.getElementById('btnBackToMenu');
 
-// Edge timers
 let timerP1, timerP2;
 
 document.addEventListener('DOMContentLoaded', () => {
     setupEdgeTimers();
-    const buttons = document.querySelectorAll('.game-button');
-    buttons.forEach(btn => {
-        btn.addEventListener('mouseenter', () => {});
-        btn.addEventListener('focus', () => {});
-        btn.addEventListener('mouseleave', () => {});
-        btn.addEventListener('blur', () => {});
-    });
     Game.gameStartTime = getCurrentUTCDateTime();
 });
 
@@ -107,10 +102,13 @@ function showMenu() {
 function showNameEntry(mode) {
     Game.mode = mode;
     hideAllScreens();
+    const label1 = document.querySelector('label[for="player1Input"]');
     if (mode === 'human') {
         $player2Group.classList.remove('hidden');
+        label1.textContent = "Player 1 (X):";
     } else {
         $player2Group.classList.add('hidden');
+        label1.textContent = "Enter your name:";
     }
     $nameScreen.classList.remove('hidden');
     $player1Input.focus();
@@ -216,11 +214,11 @@ function drawBoard() {
             } else {
                 fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
             }
-            rect(x, y, Game.cellSize, Game.cellSize, Game.cellSize * 0.12);
+            rect(x, y, Game.cellSize, Game.cellSize); // SHARP CORNERS
 
             if (Game.active && isValidMove(i, j) && (isMouseOverCell(i, j) || isTouchOverCell(i, j))) {
                 fill(COLORS.hover + '33');
-                rect(x, y, Game.cellSize, Game.cellSize, Game.cellSize * 0.12);
+                rect(x, y, Game.cellSize, Game.cellSize);
             }
         }
     }
@@ -495,7 +493,6 @@ function randomChoice(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Get current UTC date/time in YYYY-MM-DD HH:MM:SS format
 function getCurrentUTCDateTime() {
     const now = new Date();
     const year = now.getUTCFullYear();
