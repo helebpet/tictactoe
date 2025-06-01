@@ -1,11 +1,3 @@
-// Responsive & visually pleasing Tic Tac Toe with "timer on edges" and sharp cells
-
-const CHECKERBOARD_THEMES = {
-    normal: ['#D9F201', '#FA87A0'],  // Lime green and Pink
-    blue:   ['#0D0D55', '#5271FF']   // Navy blue and Bright blue
-};
-let checkerboardTheme = 'normal';
-
 const COLORS = {
     board1: '#D9F201',    // Lime green
     board2: '#FA87A0',    // Pink
@@ -13,13 +5,13 @@ const COLORS = {
     background: '#FFFFFF', // White
     hover: '#5271FF',     // Bright blue
     winLine: '#0D0D55',   // Navy blue
-    highlight: '#5271FF'  // UPDATED: Now using bright blue for winning highlight
+    highlight: '#5271FF'  // Bright blue for winning cells
 };
 
-const BOARD_SCALE_DESKTOP = 0.6;
-const BOARD_SCALE_MOBILE  = 0.96;
+const BOARD_SCALE_DESKTOP = 0.65;
+const BOARD_SCALE_MOBILE  = 0.98;
 const TURN_TIME_LIMIT = 10;
-const WIN_HIGHLIGHT_DELAY = 1200; // ms to show highlight before overlay
+const WIN_HIGHLIGHT_DELAY = 1200;
 const ROBOT_NAMES = [
     "ThinkBot", "SmartBot", "LogicBot", "WinBot", "TacBot",
     "StrategyBot", "CleverBot", "MindBot", "GeniusBot", "ProBot"
@@ -39,12 +31,11 @@ const Game = {
     cellSize: 0,
     boardX: 0,
     boardY: 0,
-    winCells: [], // Stores winning cell coordinates
+    winCells: [],
     showWinHighlight: false,
     gameStartTime: null
 };
 
-// UI Selectors
 const $menuScreen = document.getElementById('menuScreen');
 const $nameScreen = document.getElementById('nameScreen');
 const $gameOverScreen = document.getElementById('gameOverScreen');
@@ -58,21 +49,18 @@ const $btnStartGame = document.getElementById('btnStartGame');
 const $btnPlayAgain = document.getElementById('btnPlayAgain');
 const $btnBackToMenu = document.getElementById('btnBackToMenu');
 
+// Edge timers
 let timerP1, timerP2;
 
-// Setup event listeners and initialize game
 document.addEventListener('DOMContentLoaded', () => {
+    setupEdgeTimers();
     const buttons = document.querySelectorAll('.game-button');
     buttons.forEach(btn => {
-        btn.addEventListener('mouseenter', handleBorderBlue);
-        btn.addEventListener('focus', handleBorderBlue);
-        btn.addEventListener('mouseleave', handleBorderNormal);
-        btn.addEventListener('blur', handleBorderNormal);
-        btn.addEventListener('touchstart', handleBorderBlue, {passive:true});
-        btn.addEventListener('touchend', handleBorderNormal, {passive:true});
-        btn.addEventListener('touchcancel', handleBorderNormal, {passive:true});
+        btn.addEventListener('mouseenter', () => {});
+        btn.addEventListener('focus', () => {});
+        btn.addEventListener('mouseleave', () => {});
+        btn.addEventListener('blur', () => {});
     });
-    setupEdgeTimers();
     Game.gameStartTime = getCurrentUTCDateTime();
 });
 
@@ -97,14 +85,10 @@ function showEdgeTimers() {
     timerP1.classList.remove('hidden');
     timerP2.classList.remove('hidden');
 }
-
 function hideEdgeTimers() {
     timerP1.classList.add('hidden');
     timerP2.classList.add('hidden');
 }
-
-function handleBorderBlue() { checkerboardTheme = 'blue'; }
-function handleBorderNormal() { checkerboardTheme = 'normal'; }
 
 function hideAllScreens() {
     $menuScreen.classList.add('hidden');
@@ -176,7 +160,6 @@ function endGame(message) {
     $gameOverScreen.classList.remove('hidden');
 }
 
-// Event Listeners
 $btnHuman.addEventListener('click', () => showNameEntry('human'));
 $btnRobot.addEventListener('click', () => showNameEntry('robot'));
 $btnStartGame.addEventListener('click', startGame);
@@ -186,17 +169,16 @@ $nameScreen.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') startGame();
 });
 
-// p5.js Setup & Draw
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    textFont('monospace');
+    textFont('Kumbh Sans');
     textStyle(BOLD);
     showMenu();
 }
 
 function draw() {
     background(COLORS.background);
-    
+
     if (Game.active || Game.showWinHighlight) {
         calculateBoardMetrics();
         drawBoard();
@@ -214,7 +196,7 @@ function calculateBoardMetrics() {
     let boardScale = isMobile ? BOARD_SCALE_MOBILE : BOARD_SCALE_DESKTOP;
     Game.boardSize = Math.min(windowWidth, windowHeight) * boardScale;
     Game.boardSize = Math.max(Game.boardSize, 240);
-    Game.boardSize = Math.min(Game.boardSize, 600);
+    Game.boardSize = Math.min(Game.boardSize, 620);
     Game.cellSize = Game.boardSize / 3;
     Game.boardX = (windowWidth - Game.boardSize) / 2;
     Game.boardY = (windowHeight - Game.boardSize) / 2;
@@ -226,30 +208,28 @@ function drawBoard() {
         for (let j = 0; j < 3; j++) {
             let x = Game.boardX + j * Game.cellSize;
             let y = Game.boardY + i * Game.cellSize;
-            
-            // Check if this cell is part of winning line
+
             let isWinCell = Game.winCells.some(([wi, wj]) => wi === i && wj === j);
-            
-            // Fill with highlight color if winning cell, otherwise normal color
+
             if (Game.showWinHighlight && isWinCell) {
                 fill(COLORS.highlight);
             } else {
                 fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
             }
-            
-            rect(x, y, Game.cellSize, Game.cellSize);
-            
-            // Add hover effect if cell is playable
+            rect(x, y, Game.cellSize, Game.cellSize, Game.cellSize * 0.12);
+
             if (Game.active && isValidMove(i, j) && (isMouseOverCell(i, j) || isTouchOverCell(i, j))) {
-                fill(COLORS.hover + '44');
-                rect(x, y, Game.cellSize, Game.cellSize);
+                fill(COLORS.hover + '33');
+                rect(x, y, Game.cellSize, Game.cellSize, Game.cellSize * 0.12);
             }
         }
     }
 }
 
 function drawMarks() {
-    let fontSize = Game.cellSize * 0.55;
+    let fontSize = Game.cellSize * 0.68;
+    textFont('Kumbh Sans');
+    textStyle(BOLD);
     textSize(fontSize);
     textAlign(CENTER, CENTER);
     fill(COLORS.text);
@@ -258,8 +238,8 @@ function drawMarks() {
         for (let j = 0; j < 3; j++) {
             if (Game.board[i][j] !== '') {
                 let cx = Game.boardX + j * Game.cellSize + Game.cellSize / 2;
-                let cy = Game.boardY + i * Game.cellSize + Game.cellSize / 2;
-                text(Game.board[i][j], cx, cy + 2);
+                let cy = Game.boardY + i * Game.cellSize + Game.cellSize / 2 + 3;
+                text(Game.board[i][j], cx, cy);
             }
         }
     }
@@ -273,12 +253,10 @@ function drawWinLine() {
     let x2 = Game.boardX + end.col * Game.cellSize + Game.cellSize / 2;
     let y2 = Game.boardY + end.row * Game.cellSize + Game.cellSize / 2;
 
-    // Draw bold line
     strokeWeight(Game.cellSize * 0.19);
-    stroke(COLORS.text);
+    stroke(COLORS.hover);
     line(x1, y1, x2, y2);
 
-    // Draw accent line
     strokeWeight(Game.cellSize * 0.09);
     stroke(COLORS.winLine);
     line(x1, y1, x2, y2);
@@ -286,7 +264,6 @@ function drawWinLine() {
     strokeWeight(1);
 }
 
-// Input Handling
 function mousePressed() {
     if (!Game.active || Game.winner !== null) return;
     if (Game.mode === 'robot' && Game.currentPlayer === 'O') return;
@@ -326,6 +303,7 @@ function isMouseOverCell(i, j) {
            mouseY > y && mouseY < y + Game.cellSize;
 }
 
+let cursor = { i: 0, j: 0 };
 function keyPressed() {
     if (!Game.active || Game.winner !== null) return;
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(key)) {
@@ -383,8 +361,6 @@ function makeRobotMove() {
     if (move) makeMove(move.i, move.j);
 }
 
-// ... (previous code remains the same until findBestMove function)
-
 function findBestMove() {
     // Try to win
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
@@ -395,7 +371,6 @@ function findBestMove() {
             if (tempWinner === 'O') return { i, j };
         }
     }
-    
     // Block opponent
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
         if (Game.board[i][j] === '') {
@@ -405,16 +380,13 @@ function findBestMove() {
             if (tempWinner === 'X') return { i, j };
         }
     }
-    
     // Take center
     if (Game.board[1][1] === '') return { i: 1, j: 1 };
-    
     // Take corner
     let corners = [{i:0,j:0}, {i:0,j:2}, {i:2,j:0}, {i:2,j:2}];
     for (let corner of corners) {
         if (Game.board[corner.i][corner.j] === '') return corner;
     }
-    
     // Take any available
     let available = [];
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
@@ -424,7 +396,6 @@ function findBestMove() {
 
 function checkWinnerAndCells() {
     Game.winCells = [];
-    
     // Check rows
     for (let i = 0; i < 3; i++) {
         if (Game.board[i][0] !== '' &&
@@ -435,7 +406,6 @@ function checkWinnerAndCells() {
             return Game.board[i][0];
         }
     }
-    
     // Check columns
     for (let j = 0; j < 3; j++) {
         if (Game.board[0][j] !== '' &&
@@ -446,7 +416,6 @@ function checkWinnerAndCells() {
             return Game.board[0][j];
         }
     }
-    
     // Check diagonals
     if (Game.board[0][0] !== '' &&
         Game.board[0][0] === Game.board[1][1] &&
@@ -455,7 +424,6 @@ function checkWinnerAndCells() {
         Game.winCells = [[0,0], [1,1], [2,2]];
         return Game.board[0][0];
     }
-    
     if (Game.board[0][2] !== '' &&
         Game.board[0][2] === Game.board[1][1] &&
         Game.board[1][1] === Game.board[2][0]) {
@@ -463,13 +431,11 @@ function checkWinnerAndCells() {
         Game.winCells = [[0,2], [1,1], [2,0]];
         return Game.board[0][2];
     }
-    
     // Check for tie
     if (!Game.board.flat().includes('')) {
         Game.winLine = null;
         return 'tie';
     }
-    
     Game.winLine = null;
     return null;
 }
@@ -540,6 +506,3 @@ function getCurrentUTCDateTime() {
     const seconds = String(now.getUTCSeconds()).padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-
-// Initialize cursor for keyboard controls
-let cursor = { i: 0, j: 0 };
