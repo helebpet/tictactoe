@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tic Tac Toe</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="alternate icon" type="image/png" href="favicon.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
-    <script defer src="game.js"></script>
+    <!-- Load p5.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
     <!-- Menu Screen -->
@@ -18,6 +16,7 @@
         <button class="game-button" id="btnHuman">Human vs Human</button>
         <button class="game-button" id="btnRobot">Human vs Robot</button>
     </div>
+
     <!-- Name Input Screen -->
     <div id="nameScreen" class="ui-container hidden">
         <h1 class="title">ENTER NAMES</h1>
@@ -29,16 +28,17 @@
             <label class="input-label" for="player2Input">Player 2 (O):</label>
             <input type="text" id="player2Input" class="game-input" placeholder="Enter name" value="Player 2">
         </div>
-        <div id="robotMessage" class="subtitle hidden" aria-live="polite">Robot will get a random name!</div>
         <button class="game-button" id="btnStartGame">Start Game</button>
     </div>
+
     <!-- Game Over Screen -->
     <div id="gameOverScreen" class="ui-container hidden">
         <div id="resultText" class="result-display"></div>
         <button class="game-button" id="btnPlayAgain">Play Again</button>
         <button class="game-button" id="btnBackToMenu">Back to Menu</button>
     </div>
-    <!-- Timer Display -->
-    <div id="timerDisplay" class="timer-display hidden" aria-live="polite"></div>
+
+    <!-- Load game.js after the DOM is ready -->
+    <script src="game.js"></script>
 </body>
 </html>
