@@ -1,3 +1,4 @@
+/* Base styles */
 html, body {
     width: 100vw;
     height: 100vh;
@@ -5,172 +6,178 @@ html, body {
     padding: 0;
     box-sizing: border-box;
     overflow: hidden;
-}
-body {
-    font-family: 'Courier New', monospace;
-    background: #fff;
+    font-family: 'Kumbh Sans', sans-serif;
 }
 
+body {
+    background: #FFFFFF;
+}
+
+/* Canvas positioning */
+canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1;
+}
+
+/* UI Container */
 .ui-container {
+    position: relative;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.98);
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    min-width: 280px;
+    max-width: 95vw;
+    max-height: 95vh;
+    box-sizing: border-box;
+    overflow: auto;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 0;
-    padding: 32px 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    min-width: 260px;
-    max-width: 95vw;
-    max-height: 95vh;
-    box-sizing: border-box;
-    z-index: 100;
-    overflow: auto;
 }
+
+/* Typography */
 .title {
-    font-size: 2.1em;
-    font-weight: bold;
+    font-size: min(15vw, 72px);
+    font-weight: 900;
     color: #0D0D55;
     margin: 0;
     text-align: center;
-    word-break: break-word;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
 }
+
 .subtitle {
-    font-size: 1em;
+    font-size: min(6vw, 24px);
     color: #0D0D55;
     margin: 0;
     text-align: center;
-    word-break: break-word;
+    font-weight: 700;
 }
+
+/* Input styles */
 .input-group {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
 }
+
 .input-label {
-    font-size: 1em;
+    font-size: min(5vw, 20px);
     color: #0D0D55;
-    font-weight: bold;
+    font-weight: 700;
 }
+
 .game-input {
-    padding: 10px 14px;
-    border: 2px solid #0D0D55;
-    border-radius: 8px;
-    font-size: 1em;
+    padding: 12px 16px;
+    border: 3px solid #0D0D55;
+    border-radius: 12px;
+    font-size: min(5vw, 20px);
+    font-family: 'Kumbh Sans', sans-serif;
     text-align: center;
-    width: 170px;
+    width: 100%;
+    max-width: 280px;
     background: white;
     color: #0D0D55;
-    box-sizing: border-box;
+    font-weight: 700;
 }
+
 .game-input:focus {
     outline: none;
     border-color: #5271FF;
 }
+
+/* Button styles */
 .game-button {
-    padding: 14px 0;
+    padding: 16px 24px;
     background-color: #0D0D55;
     color: #D9F201;
     border: none;
-    border-radius: 25px;
-    font-size: 1.2em;
-    font-weight: bold;
+    border-radius: 16px;
+    font-size: min(5vw, 24px);
+    font-weight: 700;
     cursor: pointer;
-    width: 220px;           /* much thinner than 90vw */
-    max-width: 90vw;
-    min-width: 120px;
-    transition: background-color 0.2s;
-    touch-action: manipulation;
-    box-sizing: border-box;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+    width: 100%;
+    max-width: 280px;
+    transition: all 0.2s ease;
+    font-family: 'Kumbh Sans', sans-serif;
 }
+
 .game-button:hover,
 .game-button:focus {
     background-color: #5271FF;
+    transform: translateY(-2px);
 }
+
+/* Timer styles */
 .timer-edge {
     position: absolute;
     color: #0D0D55;
-    background: rgba(255,255,255,0.92);
-    font-size: 1.1em;
-    font-family: inherit;
-    font-weight: normal;
-    border-radius: 8px;
-    padding: 10px 13px;
-    min-width: 90px;
+    background: rgba(255, 255, 255, 0.98);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: min(5vw, 24px);
+    padding: 12px 20px;
+    border-radius: 12px;
+    min-width: 120px;
     text-align: center;
     pointer-events: none;
     z-index: 200;
-    transition: font-weight 0.1s, box-shadow 0.1s;
-    box-shadow: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(13, 13, 85, 0.1);
 }
-.timer-edge.active {
-    font-weight: bold;
-    color: #5271FF;
-}
-#timerP1 { left: max(4vw, 10px); }
-#timerP2 { right: max(4vw, 10px); }
 
-.result-display {
-    font-size: 1.5em;
-    color: #0D0D55;
-    font-weight: bold;
-    text-align: center;
-    margin: 10px 0;
-    word-break: break-word;
+.timer-edge.active {
+    color: #5271FF;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(13, 13, 85, 0.15);
 }
+
+/* Result display */
+.result-display {
+    font-size: min(8vw, 42px);
+    color: #0D0D55;
+    font-weight: 900;
+    text-align: center;
+    margin: 16px 0;
+    line-height: 1.2;
+}
+
 .hidden {
     display: none;
 }
 
-/* Responsive: further shrink overlays and buttons on small screens */
-@media (max-width: 500px), (max-height: 650px) {
+/* Mobile adjustments */
+@media (max-width: 500px), (max-height: 600px) {
     .ui-container {
-        padding: 7vw 1vw;
-        min-width: 85vw;
-        max-width: 97vw;
-        gap: 10px;
+        padding: 24px 16px;
+        gap: 16px;
     }
-    .title {
-        font-size: 7vw;
-    }
-    .subtitle,
-    .input-label {
-        font-size: 4vw;
-    }
-    .game-input,
+    
     .game-button {
-        width: 65vw;        /* thinner on mobile too */
-        min-width: 100px;
-        font-size: 5vw;
-        padding: 4vw 0;
+        padding: 14px 20px;
     }
-    .result-display {
-        font-size: 6vw;
-    }
+    
     .timer-edge {
-        left: 50% !important;
-        right: auto !important;
-        min-width: 0;
-        width: 80vw;
-        font-size: 5vw;
-        padding: 3vw 0;
-        border-radius: 8px;
-        text-align: center;
+        padding: 10px 16px;
     }
-    #timerP1 {
-        top: 3vw;
-        transform: translate(-50%,0);
+}
+
+/* Extremely small screens */
+@media (max-width: 320px) {
+    .ui-container {
+        padding: 16px 12px;
+        gap: 12px;
     }
-    #timerP2 {
-        bottom: 3vw;
-        transform: translate(-50%,0);
+    
+    .game-button {
+        padding: 12px 16px;
     }
 }
