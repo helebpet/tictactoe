@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            background: #fff; /* Ensures white background always */
+        }
+        
+        .ui-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            min-width: 300px;
+            max-width: 400px;
+            z-index: 100;
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0D0D55;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #0D0D55;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .input-label {
+            font-size: 14px;
+            color: #0D0D55;
+            font-weight: bold;
+        }
+        
+        .game-input {
+            padding: 12px 16px;
+            border: 2px solid #0D0D55;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            width: 200px;
+            background: white;
+            color: #0D0D55;
+        }
+        
+        .game-input:focus {
+            outline: none;
+            border-color: #5271FF;
+        }
+        
+        .game-button {
+            padding: 12px 24px;
+            background-color: #0D0D55;
+            color: #D9F201;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 200px;
+            transition: background-color 0.2s;
+        }
+        
+        .game-button:hover {
+            background-color: #5271FF;
+        }
+        
+        .timer-display {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: #0D0D55;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        
+        .result-display {
+            font-size: 24px;
+            color: #0D0D55;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Screen -->
+    <div id="menuScreen" class="ui-container">
+        <h1 class="title">TIC TAC TOE</h1>
+        <p class="subtitle">Choose your game mode:</p>
+        <button class="game-button" onclick="startNameEntry('human')">Human vs Human</button>
+        <button class="game-button" onclick="startNameEntry('robot')">Human vs Robot</button>
+    </div>
+
+    <!-- Name Input Screen -->
+    <div id="nameScreen" class="ui-container hidden">
+        <h1 class="title">ENTER NAMES</h1>
+        <div class="input-group">
+            <label class="input-label">Player 1 (X):</label>
+            <input type="text" id="player1Input" class="game-input" placeholder="Enter name" value="Player 1">
+        </div>
+        <div id="player2Group" class="input-group">
+            <label class="input-label">Player 2 (O):</label>
+            <input type="text" id="player2Input" class="game-input" placeholder="Enter name" value="Player 2">
+        </div>
+        <div id="robotMessage" class="subtitle hidden">Robot will get a random name!</div>
+        <button class="game-button" onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="ui-container hidden">
+        <div id="resultText" class="result-display"></div>
+        <button class="game-button" onclick="resetGame()">Play Again</button>
+        <button class="game-button" onclick="showMenu()">Back to Menu</button>
+    </div>
+
+    <!-- Timer Display -->
+    <div id="timerDisplay" class="timer-display hidden"></div>
+
+    <script>
+        // Game variables
+        let board = [];
+        let currentPlayer = 'X';
+        let winner = null;
+        let winLine = null;
+        let turnStartTime = 0;
+        let turnLimit = 10;
+        let gameMode = null;
+        let player1Name = '';
+        let player2Name = '';
+        let robotThinking = false;
+        let gameActive = false;
+
+        // Board dimensions
+        let boardSize;
+        let cellSize;
+        let boardX, boardY;
+
+        // Colors
+        const COLOR1 = '#D9F201';
+        const COLOR2 = '#FA87A0';
+        const TEXT_COLOR = '#0D0D55';
+        const BG_COLOR = '#f8f8f8';
+        const HOVER_COLOR = '#5271FF';
+
+        // Robot names
+        const robotNames = [
+            "ThinkBot", "SmartBot", "LogicBot", "WinBot", "TacBot",
+            "StrategyBot", "CleverBot", "MindBot", "GeniusBot", "ProBot"
+        ];
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            textFont('monospace');
+            textStyle(BOLD);
+            showMenu();
+        }
+
+        function draw() {
+            if (!gameActive) {
+                background(BG_COLOR);
+                drawFullCheckerboard();
+                return;
+            } else {
+                background(255); // White background during play
+                calculateBoardMetrics();
+                drawBoard();
+                drawMarks();
+                if (winLine) drawWinLine();
+                updateTimer();
+                checkTimeLimit();
+            }
+        }
+
+        function calculateBoardMetrics() {
+            boardSize = min(windowWidth * 0.6, windowHeight * 0.6);
+            cellSize = boardSize / 3;
+            boardX = (windowWidth - boardSize) / 2;
+            boardY = (windowHeight - boardSize) / 2;
+        }
+
+        function drawFullCheckerboard() {
+            let tileSize = min(windowWidth, windowHeight) * 0.06;
+            let cols = floor(windowWidth / tileSize);  // Use floor instead of ceil
+            let rows = floor(windowHeight / tileSize); // Use floor instead of ceil
+
+            noStroke();
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    fill((i + j) % 2 === 0 ? COLOR1 : COLOR2);
+                    rect(j * tileSize, i * tileSize, tileSize, tileSize);
+                }
+            }
+        }
+
+        function drawBoard() {
+            noStroke();
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let x = boardX + j * cellSize;
+                    let y = boardY + i * cellSize;
+                    
+                    fill((i + j) % 2 === 0 ? COLOR1 : COLOR2);
+                    rect(x, y, cellSize, cellSize);
+
+                    // Hover effect
+                    if (isValidMove(i, j) && isMouseOverCell(i, j)) {
+                        fill(HOVER_COLOR + '44');
+                        rect(x, y, cellSize, cellSize);
+                    }
+                }
+            }
+        }
+
+        function drawMarks() {
+            textSize(cellSize * 0.6);
+            textAlign(CENTER, CENTER);
+            fill(TEXT_COLOR);
+            noStroke();
+            
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] !== '') {
+                        let cx = boardX + j * cellSize + cellSize / 2;
+                        let cy = boardY + i * cellSize + cellSize / 2;
+                        text(board[i][j], cx, cy);
+                    }
+                }
+            }
+        }
+
+        function drawWinLine() {
+            let x1 = boardX + winLine[1] * cellSize + cellSize / 2;
+            let y1 = boardY + winLine[0] * cellSize + cellSize / 2;
+            let x2 = boardX + winLine[3] * cellSize + cellSize / 2;
+            let y2 = boardY + winLine[2] * cellSize + cellSize / 2;
+            
+            stroke(TEXT_COLOR);
+            strokeWeight(8);
+            line(x1, y1, x2, y2);
+        }
+
+        function isMouseOverCell(i, j) {
+            let x = boardX + j * cellSize;
+            let y = boardY + i * cellSize;
+            return mouseX > x && mouseX < x + cellSize && 
+                   mouseY > y && mouseY < y + cellSize;
+        }
+
+        function isValidMove(i, j) {
+            return board[i][j] === '' && winner === null && 
+                   (gameMode === 'human' || (gameMode === 'robot' && currentPlayer === 'X'));
+        }
+
+        function mousePressed() {
+            if (!gameActive || winner !== null) return;
+            if (gameMode === 'robot' && currentPlayer === 'O') return;
+
+            let i = floor((mouseY - boardY) / cellSize);
+            let j = floor((mouseX - boardX) / cellSize);
+            
+            if (i >= 0 && i < 3 && j >= 0 && j < 3 && isValidMove(i, j)) {
+                makeMove(i, j);
+            }
+        }
+
+        function makeMove(i, j) {
+            if (board[i][j] !== '') return;
+            
+            board[i][j] = currentPlayer;
+            winner = checkWinner();
+            
+            if (winner !== null) {
+                endGame();
+            } else {
+                switchPlayer();
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            turnStartTime = millis();
+            
+            if (gameMode === 'robot' && currentPlayer === 'O' && !robotThinking) {
+                robotThinking = true;
+                setTimeout(() => {
+                    if (winner === null && currentPlayer === 'O' && gameActive) {
+                        makeRobotMove();
+                    }
+                    robotThinking = false;
+                }, 800);
+            }
+        }
+
+        function makeRobotMove() {
+            let move = findBestMove();
+            if (move) {
+                makeMove(move.i, move.j);
+            }
+        }
+
+        function findBestMove() {
+            // Try to win
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] === '') {
+                        board[i][j] = 'O';
+                        let tempWinner = checkWinner();
+                        board[i][j] = ''; // Reset the move
+                        if (tempWinner === 'O') {
+                            return { i, j };
+                        }
+                    }
+                }
+            }
+            
+            // Block player
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] === '') {
+                        board[i][j] = 'X';
+                        let tempWinner = checkWinner();
+                        board[i][j] = ''; // Reset the move
+                        if (tempWinner === 'X') {
+                            return { i, j };
+                        }
+                    }
+                }
+            }
+            
+            // Take center
+            if (board[1][1] === '') return { i: 1, j: 1 };
+            
+            // Take corners
+            let corners = [{i:0,j:0}, {i:0,j:2}, {i:2,j:0}, {i:2,j:2}];
+            for (let corner of corners) {
+                if (board[corner.i][corner.j] === '') {
+                    return corner;
+                }
+            }
+            
+            // Take any available spot
+            let available = [];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] === '') {
+                        available.push({ i, j });
+                    }
+                }
+            }
+            
+            return available.length > 0 ? random(available) : null;
+        }
+
+        function checkWinner() {
+            // Check rows
+            for (let i = 0; i < 3; i++) {
+                if (board[i][0] !== '' && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+                    winLine = [i, 0, i, 2];
+                    return board[i][0];
+                }
+            }
+            
+            // Check columns
+            for (let j = 0; j < 3; j++) {
+                if (board[0][j] !== '' && board[0][j] === board[1][j] && board[1][j] === board[2][j]) {
+                    winLine = [0, j, 2, j];
+                    return board[0][j];
+                }
+            }
+            
+            // Check diagonals
+            if (board[0][0] !== '' && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+                winLine = [0, 0, 2, 2];
+                return board[0][0];
+            }
+            
+            if (board[0][2] !== '' && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+                winLine = [0, 2, 2, 0];
+                return board[0][2];
+            }
+            
+            // Check for tie
+            if (!board.flat().includes('')) {
+                winLine = null; // No win line for tie
+                return 'tie';
+            }
+            
+            winLine = null; // No winner yet
+            return null;
+        }
+
+        function updateTimer() {
+            if (!gameActive || winner !== null) return;
+            
+            let elapsed = (millis() - turnStartTime) / 1000;
+            let remaining = max(0, turnLimit - elapsed);
+            let playerName = currentPlayer === 'X' ? player1Name : player2Name;
+            
+            document.getElementById('timerDisplay').textContent = 
+                `${playerName}'s turn: ${remaining.toFixed(1)}s`;
+        }
+
+        function checkTimeLimit() {
+            if (!gameActive || winner !== null) return;
+            
+            let elapsed = (millis() - turnStartTime) / 1000;
+            if (elapsed > turnLimit) {
+                switchPlayer();
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('timerDisplay').classList.add('hidden');
+            
+            let resultText = '';
+            if (winner === 'tie') {
+                resultText = "It's a tie!";
+            } else {
+                let winnerName = winner === 'X' ? player1Name : player2Name;
+                resultText = `${winnerName} wins!`;
+            }
+            
+            document.getElementById('resultText').textContent = resultText;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        function initializeGame() {
+            board = Array.from({ length: 3 }, () => ['', '', '']);
+            currentPlayer = 'X';
+            winner = null;
+            winLine = null;
+            turnStartTime = millis();
+            robotThinking = false;
+            gameActive = true;
+        }
+
+        // UI Functions
+        function showMenu() {
+            hideAllScreens();
+            document.getElementById('menuScreen').classList.remove('hidden');
+            gameActive = false;
+        }
+
+        function startNameEntry(mode) {
+            gameMode = mode;
+            hideAllScreens();
+            
+            if (mode === 'human') {
+                document.getElementById('player2Group').classList.remove('hidden');
+                document.getElementById('robotMessage').classList.add('hidden');
+            } else {
+                document.getElementById('player2Group').classList.add('hidden');
+                document.getElementById('robotMessage').classList.remove('hidden');
+            }
+            
+            document.getElementById('nameScreen').classList.remove('hidden');
+        }
+
+        function startGame() {
+            player1Name = document.getElementById('player1Input').value.trim() || 'Player 1';
+            
+            if (gameMode === 'human') {
+                player2Name = document.getElementById('player2Input').value.trim() || 'Player 2';
+            } else {
+                player2Name = random(robotNames);
+            }
+            
+            hideAllScreens();
+            document.getElementById('timerDisplay').classList.remove('hidden');
+            initializeGame();
+        }
+
+        function resetGame() {
+            hideAllScreens();
+            document.getElementById('timerDisplay').classList.remove('hidden');
+            initializeGame();
+        }
+
+        function hideAllScreens() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('nameScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('timerDisplay').classList.add('hidden');
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
