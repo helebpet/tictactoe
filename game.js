@@ -1,17 +1,27 @@
-// Responsive, bold Tic Tac Toe with sharp cells, big modern font, and edge timers
-// Single player: only "Enter your name" field
+// Fix heart and flower centering, sizing, and colors to match palette and fit perfectly in the cell
 
-const COLORS = {
-    board1: '#B9B1FF',    // Lavender
-    board2: '#D1DE54',    // Chartreuse
-    text: '#240046',      // Deep purple
-    background: '#F9F5E9', // Off-white
-    hover: '#240046',     // Deep purple (20% opacity for hover)
-    winLine: '#B9B1FF',   // Lavender
-    highlight: '#D1DE54'  // Chartreuse for winning cells
+const PALETTE = {
+    electric: '#5c30ff',     // Heart (Player 1)
+    chilli: '#e63c23',
+    persian: '#f791c3',
+    xanthous: '#f6bc3f',     // Flower center
+    seagreen: '#008c47',     // Flower petal
+    champagne: '#ffe8ce'
 };
 
-const BOARD_SCALE_DESKTOP = 0.65;
+const COLORS = {
+    board1: PALETTE.chilli,
+    board2: PALETTE.persian,
+    background: PALETTE.champagne,
+    hover: PALETTE.seagreen + "33",
+    winLine: PALETTE.xanthous,
+    heart: PALETTE.electric,      // Blue for heart
+    flowerPetal: PALETTE.seagreen, // Green for flower petals (was center)
+    flowerCenter: PALETTE.seagreen // Green for center (was yellow)
+};
+
+const BOARD_SCALE_DESKTOP = 0.56;
+const BOARD_SCALE_TABLET  = 0.84;
 const BOARD_SCALE_MOBILE  = 0.98;
 const TURN_TIME_LIMIT = 10;
 const WIN_HIGHLIGHT_DELAY = 1200;
@@ -103,12 +113,13 @@ function showNameEntry(mode) {
     Game.mode = mode;
     hideAllScreens();
     const label1 = document.querySelector('label[for="player1Input"]');
+    const label2 = document.querySelector('label[for="player2Input"]');
+    label1.textContent = mode === 'human' ? "Player 1 (Heart):" : "Enter your name:";
+    label2.textContent = "Player 2 (Flower):";
     if (mode === 'human') {
         $player2Group.classList.remove('hidden');
-        label1.textContent = "Player 1 (X):";
     } else {
         $player2Group.classList.add('hidden');
-        label1.textContent = "Enter your name:";
     }
     $nameScreen.classList.remove('hidden');
     $player1Input.focus();
@@ -155,6 +166,8 @@ function endGame(message) {
         text = `${winnerName} wins!`;
     }
     $resultText.textContent = text;
+    $resultText.style.color = COLORS.board1;
+    $resultText.style.fontSize = "min(5vw, 24px)"; // Match CSS
     $gameOverScreen.classList.remove('hidden');
 }
 
@@ -169,7 +182,7 @@ $nameScreen.addEventListener('keydown', (e) => {
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    textFont('Kumbh Sans');
+    textFont('Geist Mono, JetBrains Mono, Fira Mono, monospace');
     textStyle(BOLD);
     showMenu();
 }
@@ -177,8 +190,10 @@ function setup() {
 function draw() {
     background(COLORS.background);
 
+    // Responsive board scaling
+    calculateBoardMetrics();
+
     if (Game.active || Game.showWinHighlight) {
-        calculateBoardMetrics();
         drawBoard();
         drawMarks();
         if (Game.winLine) drawWinLine();
@@ -190,14 +205,21 @@ function draw() {
 }
 
 function calculateBoardMetrics() {
-    let isMobile = window.innerWidth < 700 || window.innerHeight < 700;
-    let boardScale = isMobile ? BOARD_SCALE_MOBILE : BOARD_SCALE_DESKTOP;
-    Game.boardSize = Math.min(windowWidth, windowHeight) * boardScale;
+    let w = window.innerWidth, h = window.innerHeight;
+    let scale;
+    if (w < 700 || h < 700) {
+        scale = BOARD_SCALE_MOBILE;
+    } else if (w < 1050) {
+        scale = BOARD_SCALE_TABLET;
+    } else {
+        scale = BOARD_SCALE_DESKTOP;
+    }
+    Game.boardSize = Math.min(w, h) * scale;
     Game.boardSize = Math.max(Game.boardSize, 240);
     Game.boardSize = Math.min(Game.boardSize, 620);
     Game.cellSize = Game.boardSize / 3;
-    Game.boardX = (windowWidth - Game.boardSize) / 2;
-    Game.boardY = (windowHeight - Game.boardSize) / 2;
+    Game.boardX = (w - Game.boardSize) / 2;
+    Game.boardY = (h - Game.boardSize) / 2;
 }
 
 function drawBoard() {
@@ -206,18 +228,12 @@ function drawBoard() {
         for (let j = 0; j < 3; j++) {
             let x = Game.boardX + j * Game.cellSize;
             let y = Game.boardY + i * Game.cellSize;
+            fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
+            rect(x, y, Game.cellSize, Game.cellSize);
 
-            let isWinCell = Game.winCells.some(([wi, wj]) => wi === i && wj === j);
-
-            if (Game.showWinHighlight && isWinCell) {
-                fill(COLORS.highlight);
-            } else {
-                fill((i + j) % 2 === 0 ? COLORS.board1 : COLORS.board2);
-            }
-            rect(x, y, Game.cellSize, Game.cellSize); // SHARP CORNERS
-
+            // Hover highlight
             if (Game.active && isValidMove(i, j) && (isMouseOverCell(i, j) || isTouchOverCell(i, j))) {
-                fill(COLORS.hover + '33');
+                fill(COLORS.hover);
                 rect(x, y, Game.cellSize, Game.cellSize);
             }
         }
@@ -225,22 +241,59 @@ function drawBoard() {
 }
 
 function drawMarks() {
-    let fontSize = Game.cellSize * 0.68;
-    textFont('Kumbh Sans');
-    textStyle(BOLD);
-    textSize(fontSize);
-    textAlign(CENTER, CENTER);
-    fill(COLORS.text);
-    noStroke();
+    // Adjust size to fit cells perfectly
+    let size = Game.cellSize * 0.45; // Make symbols smaller to match screenshot
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            if (Game.board[i][j] !== '') {
-                let cx = Game.boardX + j * Game.cellSize + Game.cellSize / 2;
-                let cy = Game.boardY + i * Game.cellSize + Game.cellSize / 2 + 3;
-                text(Game.board[i][j], cx, cy);
+            let cx = Game.boardX + j * Game.cellSize + Game.cellSize / 2;
+            let cy = Game.boardY + i * Game.cellSize + Game.cellSize / 2;
+            let mark = Game.board[i][j];
+            if (mark === 'X') {
+                drawHeartSymbol(cx, cy, size);
+            } else if (mark === 'O') {
+                drawFlowerSymbol(cx, cy, size);
             }
         }
     }
+}
+
+// Draw a simple heart shape centered in cell
+function drawHeartSymbol(x, y, size) {
+    push();
+    translate(x, y);
+    fill(COLORS.heart);
+    noStroke();
+    beginShape();
+    // Simpler heart curve that matches screenshot exactly
+    for (let t = 0; t < TWO_PI; t += 0.01) {
+        let px = 16 * pow(sin(t), 3);
+        let py = -(13 * cos(t) - 5 * cos(2*t) - 2 * cos(3*t) - cos(4*t));
+        vertex(px * size/30, py * size/30);
+    }
+    endShape(CLOSE);
+    pop();
+}
+
+// Draw a simple 5-petal flower centered in cell
+function drawFlowerSymbol(x, y, size) {
+    push();
+    translate(x, y);
+    noStroke();
+    
+    // Green petals
+    fill(COLORS.flowerPetal);
+    for (let i = 0; i < 5; i++) {
+        let angle = TWO_PI * i / 5;
+        let px = cos(angle) * size * 0.4;
+        let py = sin(angle) * size * 0.4;
+        circle(px, py, size * 0.5);
+    }
+    
+    // Green center (same color as petals)
+    fill(COLORS.flowerCenter);
+    circle(0, 0, size * 0.6);
+    
+    pop();
 }
 
 function drawWinLine() {
@@ -251,14 +304,9 @@ function drawWinLine() {
     let x2 = Game.boardX + end.col * Game.cellSize + Game.cellSize / 2;
     let y2 = Game.boardY + end.row * Game.cellSize + Game.cellSize / 2;
 
-    strokeWeight(Game.cellSize * 0.19);
-    stroke(COLORS.hover);
-    line(x1, y1, x2, y2);
-
-    strokeWeight(Game.cellSize * 0.09);
+    strokeWeight(Game.cellSize * 0.15);
     stroke(COLORS.winLine);
     line(x1, y1, x2, y2);
-
     strokeWeight(1);
 }
 
